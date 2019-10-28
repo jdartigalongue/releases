@@ -1,0 +1,78 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    {{- include "bd.labelsWihtoutVersion" . | nindent 4 }}
+    component: rabbitmq
+  name: {{ .Release.Name }}-blackduck-rabbitmq
+  namespace: {{ .Release.Namespace }}
+spec:
+  ports:
+  - name: port-5671
+    port: 5671
+    protocol: TCP
+    targetPort: 5671
+  selector:
+    {{- include "bd.selectorLabelsWihtoutVersion" . | nindent 4 }}
+    component: rabbitmq
+  type: ClusterIP
+---
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  labels:
+    {{- include "bd.labels" . | nindent 4 }}
+    component: rabbitmq
+  name: {{ .Release.Name }}-blackduck-rabbitmq
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: 1
+  selector:
+    {{- include "bd.selectorLabels" . | nindent 4 }}
+    component: rabbitmq
+  template:
+    metadata:
+      labels:
+        {{- include "bd.selectorLabels" . | nindent 8 }}
+        component: rabbitmq
+      name: {{ .Release.Name }}-blackduck-rabbitmq
+    spec:
+      containers:
+      - envFrom:
+        - configMapRef:
+            name: {{ .Release.Name }}-blackduck-config
+        image: {{ .Values.rabbitmqRegistry }}/rabbitmq:{{ .Values.rabbitmq.imageTag }}
+        imagePullPolicy: Always
+        name: rabbitmq
+        ports:
+        - containerPort: 5671
+          protocol: TCP
+        resources:
+          limits:
+            memory: {{ .Values.rabbitmq.limitMemory }}
+          requests:
+            memory: {{ .Values.rabbitmq.requestMemory }}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /opt/blackduck/rabbitmq/security
+          name: dir-rabbitmq-security
+      dnsPolicy: ClusterFirst
+      {{- with .Values.rabbitmq.nodeSelector }}
+      nodeSelector:
+      {{ toYaml . | indent 2 }}
+      {{- end }}
+      {{- with .Values.rabbitmq.affinity }}
+      affinity:
+      {{ toYaml . | indent 2 }}
+      {{- end }}
+      {{- with .Values.rabbitmq.tolerations }}
+      tolerations:
+      {{ toYaml . | indent 2 }}
+      {{- end }}
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - emptyDir: {}
+        name: dir-rabbitmq-security

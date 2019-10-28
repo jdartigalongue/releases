@@ -1,0 +1,148 @@
+# Default values for bd.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: nginx
+  pullPolicy: IfNotPresent
+
+nameOverride: ""
+fullnameOverride: ""
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+isKubernetes: true
+
+enableLivenessProbe: true
+
+enablePersistentStorage: true
+
+imagePullSecrets: []
+
+registry: gcr.io/saas-hub-stg/blackducksoftware
+rabbitmqRegistry: docker.io/blackducksoftware
+appCheckRegistry: defensics-store.internal.synopsys.com:5004
+
+postgres:
+  port: 5432
+  requestCpu: "1"
+  requestMemory: 3072M
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+authentication:
+  limitMemory: 1024M
+  requestMemory: 1024M
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+binaryscanner:
+  limitCpu: "1"
+  limitMemory: 2048M
+  requestCpu: "1"
+  requestMemory: 2048M
+  imageTag: 2019.09
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+cfssl:
+  limitMemory: 640M
+  requestMemory: 640M
+  imageTag: 1.0.0
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+documentation:
+  limitMemory: 512M
+  requestMemory: 512M
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+jobrunner:
+  limitCpu: "1"
+  limitMemory: 4608M
+  requestCpu: "1"
+  requestMemory: 4608M
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+rabbitmq:
+  limitMemory: 1024M
+  requestMemory: 1024M
+  imageTag: 1.0.0
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+registration:
+  limitMemory: 1024M
+  requestCpu: "1"
+  requestMemory: 1024M
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+scan:
+  limitMemory: 2560M
+  requestMemory: 2560M
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+uploadcache:
+  limitMemory: 512M
+  requestMemory: 512M
+  imageTag: 1.0.9
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+webapp:
+  limitMemory: 2560M
+  requestCpu: "1"
+  requestMemory: 2560M
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+logstash:
+  limitMemory: 1024M
+  requestMemory: 1024M
+  imageTag: 1.0.4
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+webserver:
+  limitMemory: 512M
+  requestMemory: 512M
+  imageTag: 1.0.9
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+zookeeper:
+  limitMemory: 640M
+  requestCpu: "1"
+  requestMemory: 640M
+  imageTag: 1.0.0
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}

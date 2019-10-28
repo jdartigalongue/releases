@@ -1,0 +1,99 @@
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  labels:
+    {{- include "bd.labels" . | nindent 4 }}
+    component: jobrunner
+  name: {{ .Release.Name }}-blackduck-jobrunner
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: 1
+  selector:
+     {{- include "bd.selectorLabels" . | nindent 4 }}
+    component: jobrunner
+  template:
+    metadata:
+      labels:
+        {{- include "bd.selectorLabels" . | nindent 8 }}
+        component: jobrunner
+      name: {{ .Release.Name }}-blackduck-jobrunner
+    spec:
+      containers:
+      - env:
+        - name: HUB_MAX_MEMORY
+          value: 4096m
+        envFrom:
+        - configMapRef:
+            name: {{ .Release.Name }}-blackduck-config
+        - configMapRef:
+            name: {{ .Release.Name }}-blackduck-db-config
+        image: {{ .Values.registry }}/blackduck-jobrunner:{{ .Chart.AppVersion }}
+        imagePullPolicy: Always
+        {{- include "jobrunnerLivenessProbe" . | nindent 8 }}
+        name: jobrunner
+        ports:
+        - containerPort: 3001
+          protocol: TCP
+        resources:
+          limits:
+            cpu: {{ .Values.jobrunner.limitCpu }}
+            memory: {{ .Values.jobrunner.limitMemory }}
+          requests:
+            cpu: {{ .Values.jobrunner.requestCpu }}
+            memory: {{ .Values.jobrunner.requestMemory }}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /tmp/secrets/HUB_POSTGRES_ADMIN_PASSWORD_FILE
+          name: db-passwords
+          subPath: HUB_POSTGRES_ADMIN_PASSWORD_FILE
+        - mountPath: /tmp/secrets/HUB_POSTGRES_USER_PASSWORD_FILE
+          name: db-passwords
+          subPath: HUB_POSTGRES_USER_PASSWORD_FILE
+        - mountPath: /opt/blackduck/hub/jobrunner/security
+          name: dir-jobrunner
+      dnsPolicy: ClusterFirst
+      {{- with .Values.jobrunner.nodeSelector }}
+      nodeSelector:
+      {{ toYaml . | indent 2 }}
+      {{- end }}
+      {{- with .Values.jobrunner.affinity }}
+      affinity:
+      {{ toYaml . | indent 2 }}
+      {{- end }}
+      {{- with .Values.jobrunner.tolerations }}
+      tolerations:
+      {{ toYaml . | indent 2 }}
+      {{- end }}
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      {{- include "bd.securityContext" . | nindent 6 }}
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - name: db-passwords
+        secret:
+          defaultMode: 420
+          items:
+          - key: HUB_POSTGRES_ADMIN_PASSWORD_FILE
+            mode: 420
+            path: HUB_POSTGRES_ADMIN_PASSWORD_FILE
+          - key: HUB_POSTGRES_USER_PASSWORD_FILE
+            mode: 420
+            path: HUB_POSTGRES_USER_PASSWORD_FILE
+          secretName: {{ .Release.Name }}-blackduck-db-creds
+      - emptyDir: {}
+        name: dir-jobrunner
+
+{{- define "jobrunnerLivenessProbe" -}}
+{{- if .Values.enableLivenessProbe -}}
+livenessProbe:
+  exec:
+    command:
+    - /usr/local/bin/docker-healthcheck.sh
+  failureThreshold: 10
+  initialDelaySeconds: 240
+  periodSeconds: 30
+  successThreshold: 1
+  timeoutSeconds: 10
+{{- end -}}
+{{- end -}}

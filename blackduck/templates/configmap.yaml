@@ -1,0 +1,43 @@
+apiVersion: v1
+data:
+  AUTHENTICATION_HOST: {{ .Release.Name }}-blackduck-authentication:8443
+  BLACKDUCK_CFSSL_HOST: {{ .Release.Name }}-blackduck-cfssl
+  BLACKDUCK_CFSSL_PORT: "8888"
+  BLACKDUCK_UPLOAD_CACHE_HOST: {{ .Release.Name }}-blackduck-uploadcache
+  BROKER_URL: amqps://{{ .Release.Name }}-blackduck-rabbitmq/protecodesc
+  BROKER_USE_SSL: "yes"
+  CFSSL: {{ .Release.Name }}-blackduck-cfssl:8888
+  CLIENT_CERT_CN: {{ .Release.Name }}-blackduck-binaryscanner
+  DATA_RETENTION_IN_DAYS: "180"
+  ENABLE_SOURCE_UPLOADS: "true"
+  HTTPS_VERIFY_CERTS: "yes"
+  HUB_AUTHENTICATION_HOST: {{ .Release.Name }}-blackduck-authentication
+  HUB_CFSSL_HOST: {{ .Release.Name }}-blackduck-cfssl
+  HUB_DOC_HOST: {{ .Release.Name }}-blackduck-documentation
+  HUB_JOBRUNNER_HOST: {{ .Release.Name }}-blackduck-jobrunner
+  HUB_LOGSTASH_HOST: {{ .Release.Name }}-blackduck-logstash
+  HUB_REGISTRATION_HOST: {{ .Release.Name }}-blackduck-registration
+  HUB_SCAN_HOST: {{ .Release.Name }}-blackduck-scan
+  HUB_SOLR_HOST: {{ .Release.Name }}-blackduck-solr
+  HUB_UPLOAD_CACHE_HOST: {{ .Release.Name }}-blackduck-uploadcache
+  HUB_VERSION: {{ .Chart.AppVersion }}
+  HUB_WEBAPP_HOST: {{ .Release.Name }}-blackduck-webapp
+  HUB_WEBSERVER_HOST: {{ .Release.Name }}-blackduck-webserver
+  HUB_ZOOKEEPER_HOST: {{ .Release.Name }}-blackduck-zookeeper
+  IPV4_ONLY: "0"
+  MAX_TOTAL_SOURCE_SIZE_MB: "4000"
+  RABBIT_MQ_HOST: {{ .Release.Name }}-blackduck-rabbitmq
+  RABBIT_MQ_PORT: "5671"
+  RABBITMQ_DEFAULT_VHOST: protecodesc
+  RABBITMQ_SSL_FAIL_IF_NO_PEER_CERT: "false"
+  RUN_SECRETS_DIR: /tmp/secrets
+  SCANNER_CONCURRENCY: "1"
+  USE_ALERT: "0"
+  USE_BINARY_UPLOADS: "1"
+kind: ConfigMap
+metadata:
+  labels:
+    {{- include "bd.labels" . | nindent 4 }}
+    component: configmap
+  name: {{ .Release.Name }}-blackduck-config
+  namespace: {{ .Release.Namespace }}

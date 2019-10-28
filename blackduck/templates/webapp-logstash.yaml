@@ -1,0 +1,204 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    {{- include "bd.labelsWihtoutVersion" . | nindent 4 }}
+    component: webapp-logstash
+  name: {{ .Release.Name }}-blackduck-webapp
+  namespace: {{ .Release.Namespace }}
+spec:
+  ports:
+  - name: port-8443
+    port: 8443
+    protocol: TCP
+    targetPort: 8443
+  selector:
+    {{- include "bd.selectorLabelsWihtoutVersion" . | nindent 4 }}
+    component: webapp-logstash
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    {{- include "bd.labelsWihtoutVersion" . | nindent 4 }}
+    component: webapp-logstash
+  name: {{ .Release.Name }}-blackduck-logstash
+  namespace: {{ .Release.Namespace }}
+spec:
+  ports:
+  - name: port-5044
+    port: 5044
+    protocol: TCP
+    targetPort: 5044
+  selector:
+    {{- include "bd.selectorLabelsWihtoutVersion" . | nindent 4 }}
+    component: webapp-logstash
+  type: ClusterIP
+---
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  labels:
+    {{- include "bd.labels" . | nindent 4 }}
+    component: webapp-logstash
+  name: {{ .Release.Name }}-blackduck-webapp-logstash
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: 1
+  selector:
+    {{- include "bd.selectorLabels" . | nindent 4 }}
+    component: webapp-logstash
+  template:
+    metadata:
+      labels:
+        {{- include "bd.selectorLabels" . | nindent 8 }}
+        component: webapp-logstash
+      name: {{ .Release.Name }}-blackduck-webapp-logstash
+    spec:
+      containers:
+      - env:
+        - name: HUB_MAX_MEMORY
+          value: 2048m
+        envFrom:
+        - configMapRef:
+            name: {{ .Release.Name }}-blackduck-config
+        - configMapRef:
+            name: {{ .Release.Name }}-blackduck-db-config
+        image: {{ .Values.registry }}/blackduck-webapp:{{ .Chart.AppVersion }}
+        imagePullPolicy: Always
+        {{- include "webappLivenessProbe" . | nindent 8 }}
+        name: webapp
+        ports:
+        - containerPort: 8443
+          protocol: TCP
+        resources:
+          limits:
+            memory: {{ .Values.webapp.limitMemory }}
+          requests:
+            cpu: {{ .Values.webapp.requestCpu }}
+            memory: {{ .Values.webapp.requestMemory }}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /tmp/secrets/HUB_POSTGRES_ADMIN_PASSWORD_FILE
+          name: db-passwords
+          subPath: HUB_POSTGRES_ADMIN_PASSWORD_FILE
+        - mountPath: /tmp/secrets/HUB_POSTGRES_USER_PASSWORD_FILE
+          name: db-passwords
+          subPath: HUB_POSTGRES_USER_PASSWORD_FILE
+        - mountPath: /opt/blackduck/hub/hub-webapp/ldap
+          name: dir-webapp
+        - mountPath: /opt/blackduck/hub/hub-webapp/security
+          name: dir-webapp-security
+        - mountPath: /opt/blackduck/hub/logs
+          name: dir-logstash
+      - envFrom:
+        - configMapRef:
+            name: {{ .Release.Name }}-blackduck-config
+        image: {{ .Values.registry }}/blackduck-logstash:{{ .Values.logstash.imageTag }}
+        imagePullPolicy: Always
+        {{- include "logstashLivenessProbe" . | nindent 8 }}
+        name: logstash
+        ports:
+        - containerPort: 5044
+          protocol: TCP
+        resources:
+          limits:
+            memory: {{ .Values.logstash.limitMemory }}
+          requests:
+            memory: {{ .Values.logstash.requestMemory }}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /var/lib/logstash/data
+          name: dir-logstash
+      dnsPolicy: ClusterFirst
+      {{- with .Values.webapp.nodeSelector }}
+      nodeSelector:
+      {{ toYaml . | indent 2 }}
+      {{- end }}
+      {{- with .Values.webapp.affinity }}
+      affinity:
+      {{ toYaml . | indent 2 }}
+      {{- end }}
+      {{- with .Values.webapp.tolerations }}
+      tolerations:
+      {{ toYaml . | indent 2 }}
+      {{- end }}
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      {{- include "bd.securityContext" . | nindent 6 }}
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - emptyDir: {}
+        name: dir-webapp-security
+      {{- include "webappPersistentStorage" . | nindent 6 }}
+      {{- include "logstashPersistentStorage" . | nindent 6 }}
+      - name: db-passwords
+        secret:
+          defaultMode: 420
+          items:
+          - key: HUB_POSTGRES_ADMIN_PASSWORD_FILE
+            mode: 420
+            path: HUB_POSTGRES_ADMIN_PASSWORD_FILE
+          - key: HUB_POSTGRES_USER_PASSWORD_FILE
+            mode: 420
+            path: HUB_POSTGRES_USER_PASSWORD_FILE
+          secretName: {{ .Release.Name }}-blackduck-db-creds
+
+
+{{- define "webappLivenessProbe" -}}
+{{- if .Values.enableLivenessProbe -}}
+livenessProbe:
+  exec:
+    command:
+    - /usr/local/bin/docker-healthcheck.sh
+    - https://127.0.0.1:8443/api/health-checks/liveness
+    - /opt/blackduck/hub/hub-webapp/security/root.crt
+    - /opt/blackduck/hub/hub-webapp/security/blackduck_system.crt
+    - /opt/blackduck/hub/hub-webapp/security/blackduck_system.key
+  failureThreshold: 1000
+  initialDelaySeconds: 360
+  periodSeconds: 30
+  successThreshold: 1
+  timeoutSeconds: 10
+{{- end -}}
+{{- end -}}
+
+{{- define "logstashLivenessProbe" -}}
+{{- if .Values.enableLivenessProbe -}}
+livenessProbe:
+  exec:
+    command:
+    - /usr/local/bin/docker-healthcheck.sh
+    - http://localhost:9600/
+  failureThreshold: 1000
+  initialDelaySeconds: 240
+  periodSeconds: 30
+  successThreshold: 1
+  timeoutSeconds: 10
+{{- end -}}
+{{- end -}}
+
+{{- define "webappPersistentStorage" -}}
+{{- if .Values.enablePersistentStorage -}}
+- name: dir-webapp
+  persistentVolumeClaim:
+    claimName: {{ .Release.Name }}-blackduck-webapp
+{{- else -}}
+- emptyDir: {}
+  name: dir-webapp
+{{- end -}}
+{{- end -}}
+
+{{- define "logstashPersistentStorage" -}}
+{{- if .Values.enablePersistentStorage -}}
+- name: dir-logstash
+  persistentVolumeClaim:
+    claimName: {{ .Release.Name }}-blackduck-logstash
+{{- else -}}
+- emptyDir: {}
+  name: dir-logstash
+{{- end -}}
+{{- end -}}

@@ -1,0 +1,96 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    {{- include "bd.labelsWihtoutVersion" . | nindent 4 }}
+    component: documentation
+  name: {{ .Release.Name }}-blackduck-documentation
+  namespace: {{ .Release.Namespace }}
+spec:
+  ports:
+  - name: port-8443
+    port: 8443
+    protocol: TCP
+    targetPort: 8443
+  selector:
+    {{- include "bd.selectorLabelsWihtoutVersion" . | nindent 4 }}
+    component: documentation
+  type: ClusterIP
+---
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  labels:
+    {{- include "bd.labels" . | nindent 4 }}
+    component: documentation
+  name: {{ .Release.Name }}-blackduck-documentation
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: 1
+  selector:
+    {{- include "bd.selectorLabels" . | nindent 4 }}
+    component: documentation
+  template:
+    metadata:
+      labels:
+        {{- include "bd.selectorLabels" . | nindent 8 }}
+        component: documentation
+      name: {{ .Release.Name }}-blackduck-documentation
+    spec:
+      containers:
+      - envFrom:
+        - configMapRef:
+            name: {{ .Release.Name }}-blackduck-config
+        image: {{ .Values.registry }}/blackduck-documentation:{{ .Chart.AppVersion }}
+        imagePullPolicy: Always
+        {{- include "documentationLivenessProbe" . | nindent 8 }}
+        name: documentation
+        ports:
+        - containerPort: 8443
+          protocol: TCP
+        resources:
+          limits:
+            memory: {{ .Values.documentation.limitMemory }}
+          requests:
+            memory: {{ .Values.documentation.requestMemory }}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /opt/blackduck/hub/hub-documentation/security
+          name: dir-documentation
+      dnsPolicy: ClusterFirst
+      {{- with .Values.documentation.nodeSelector }}
+      nodeSelector:
+      {{ toYaml . | indent 2 }}
+      {{- end }}
+      {{- with .Values.documentation.affinity }}
+      affinity:
+      {{ toYaml . | indent 2 }}
+      {{- end }}
+      {{- with .Values.documentation.tolerations }}
+      tolerations:
+      {{ toYaml . | indent 2 }}
+      {{- end }}
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      {{- include "bd.securityContext" . | nindent 6 }}
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - emptyDir: {}
+        name: dir-documentation
+
+{{- define "documentationLivenessProbe" -}}
+{{- if .Values.enableLivenessProbe -}}
+livenessProbe:
+  exec:
+    command:
+    - /usr/local/bin/docker-healthcheck.sh
+    - https://127.0.0.1:8443/hubdoc/health-checks/liveness
+    - /opt/blackduck/hub/hub-documentation/security/root.crt
+  failureThreshold: 10
+  initialDelaySeconds: 240
+  periodSeconds: 30
+  successThreshold: 1
+  timeoutSeconds: 10
+{{- end -}}
+{{- end -}}
