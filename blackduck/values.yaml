@@ -11,19 +11,6 @@ image:
 nameOverride: ""
 fullnameOverride: ""
 
-podSecurityContext: {}
-  # fsGroup: 2000
-
-securityContext: {}
-  # capabilities:
-  #   drop:
-  #   - ALL
-  # readOnlyRootFilesystem: true
-  # runAsNonRoot: true
-  # runAsUser: 1000
-
-isKubernetes: true
-
 enableLivenessProbe: true
 
 enablePersistentStorage: true
@@ -41,6 +28,13 @@ postgres:
   nodeSelector: {}
   tolerations: []
   affinity: {}
+  securityContext: { fsGroup: 0 }
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
 
 authentication:
   limitMemory: 1024M
@@ -48,6 +42,13 @@ authentication:
   nodeSelector: {}
   tolerations: []
   affinity: {}
+  securityContext: { fsGroup: 0 }
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
 
 binaryscanner:
   limitCpu: "1"
@@ -58,6 +59,13 @@ binaryscanner:
   nodeSelector: {}
   tolerations: []
   affinity: {}
+  securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
 
 cfssl:
   limitMemory: 640M
@@ -66,6 +74,13 @@ cfssl:
   nodeSelector: {}
   tolerations: []
   affinity: {}
+  securityContext: { fsGroup: 0 }
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
 
 documentation:
   limitMemory: 512M
@@ -73,6 +88,13 @@ documentation:
   nodeSelector: {}
   tolerations: []
   affinity: {}
+  securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
 
 jobrunner:
   limitCpu: "1"
@@ -82,6 +104,13 @@ jobrunner:
   nodeSelector: {}
   tolerations: []
   affinity: {}
+  securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
 
 rabbitmq:
   limitMemory: 1024M
@@ -90,6 +119,13 @@ rabbitmq:
   nodeSelector: {}
   tolerations: []
   affinity: {}
+  securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
 
 registration:
   limitMemory: 1024M
@@ -98,6 +134,13 @@ registration:
   nodeSelector: {}
   tolerations: []
   affinity: {}
+  securityContext: { fsGroup: 0 }
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
 
 scan:
   limitMemory: 2560M
@@ -105,6 +148,13 @@ scan:
   nodeSelector: {}
   tolerations: []
   affinity: {}
+  securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
 
 uploadcache:
   limitMemory: 512M
@@ -113,6 +163,13 @@ uploadcache:
   nodeSelector: {}
   tolerations: []
   affinity: {}
+  securityContext: { fsGroup: 0 }
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
 
 webapp:
   limitMemory: 2560M
@@ -121,6 +178,13 @@ webapp:
   nodeSelector: {}
   tolerations: []
   affinity: {}
+  securityContext: { fsGroup: 0 }
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
 
 logstash:
   limitMemory: 1024M
@@ -129,6 +193,13 @@ logstash:
   nodeSelector: {}
   tolerations: []
   affinity: {}
+  securityContext: { fsGroup: 0 }
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
 
 webserver:
   limitMemory: 512M
@@ -137,6 +208,13 @@ webserver:
   nodeSelector: {}
   tolerations: []
   affinity: {}
+  securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
 
 zookeeper:
   limitMemory: 640M
@@ -146,3 +224,10 @@ zookeeper:
   nodeSelector: {}
   tolerations: []
   affinity: {}
+  securityContext: { fsGroup: 0 }
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000

@@ -77,9 +77,12 @@ spec:
       tolerations:
       {{ toYaml . | indent 2 }}
       {{- end }}
+      {{- with .Values.webserver.securityContext }}
+      securityContext:
+      {{ toYaml . | indent 2 }}
+      {{- end }}
       restartPolicy: Always
       schedulerName: default-scheduler
-      {{- include "bd.securityContext" . | nindent 6 }}
       terminationGracePeriodSeconds: 30
       volumes:
       - emptyDir: {}

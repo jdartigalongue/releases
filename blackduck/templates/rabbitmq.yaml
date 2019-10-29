@@ -52,6 +52,10 @@ spec:
             memory: {{ .Values.rabbitmq.limitMemory }}
           requests:
             memory: {{ .Values.rabbitmq.requestMemory }}
+        {{- with .Values.rabbitmq.securityContext }}
+        securityContext:
+        {{ toYaml . | indent 2 }}
+        {{- end }}
         terminationMessagePath: /dev/termination-log
         terminationMessagePolicy: File
         volumeMounts:
@@ -68,6 +72,10 @@ spec:
       {{- end }}
       {{- with .Values.rabbitmq.tolerations }}
       tolerations:
+      {{ toYaml . | indent 2 }}
+      {{- end }}
+      {{- with .Values.rabbitmq.podSecurityContext }}
+      securityContext:
       {{ toYaml . | indent 2 }}
       {{- end }}
       restartPolicy: Always

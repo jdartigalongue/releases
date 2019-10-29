@@ -76,7 +76,10 @@ spec:
       {{- end }}
       restartPolicy: Always
       schedulerName: default-scheduler
-      {{- include "bd.securityContext" . | nindent 6 }}
+      {{- with .Values.registration.securityContext }}
+      securityContext:
+      {{ toYaml . | indent 2 }}
+      {{- end }}
       terminationGracePeriodSeconds: 30
       volumes:
       {{- include "registrationPersistentStorage" . | nindent 6 }}

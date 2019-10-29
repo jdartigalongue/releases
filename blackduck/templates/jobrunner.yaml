@@ -41,6 +41,10 @@ spec:
           requests:
             cpu: {{ .Values.jobrunner.requestCpu }}
             memory: {{ .Values.jobrunner.requestMemory }}
+        {{- with .Values.jobrunner.securityContext }}
+        securityContext:
+        {{ toYaml . | indent 2 }}
+        {{- end }}
         terminationMessagePath: /dev/termination-log
         terminationMessagePolicy: File
         volumeMounts:
@@ -65,9 +69,12 @@ spec:
       tolerations:
       {{ toYaml . | indent 2 }}
       {{- end }}
+      {{- with .Values.jobrunner.podSecurityContext }}
+      securityContext:
+      {{ toYaml . | indent 2 }}
+      {{- end }}
       restartPolicy: Always
       schedulerName: default-scheduler
-      {{- include "bd.securityContext" . | nindent 6 }}
       terminationGracePeriodSeconds: 30
       volumes:
       - name: db-passwords

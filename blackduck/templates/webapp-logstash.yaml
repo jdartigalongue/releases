@@ -78,6 +78,10 @@ spec:
           requests:
             cpu: {{ .Values.webapp.requestCpu }}
             memory: {{ .Values.webapp.requestMemory }}
+        {{- with .Values.webapp.securityContext }}
+        securityContext:
+        {{ toYaml . | indent 2 }}
+        {{- end }}
         terminationMessagePath: /dev/termination-log
         terminationMessagePolicy: File
         volumeMounts:
@@ -108,6 +112,10 @@ spec:
             memory: {{ .Values.logstash.limitMemory }}
           requests:
             memory: {{ .Values.logstash.requestMemory }}
+        {{- with .Values.logstash.securityContext }}
+        securityContext:
+        {{ toYaml . | indent 2 }}
+        {{- end }}
         terminationMessagePath: /dev/termination-log
         terminationMessagePolicy: File
         volumeMounts:
@@ -128,7 +136,6 @@ spec:
       {{- end }}
       restartPolicy: Always
       schedulerName: default-scheduler
-      {{- include "bd.securityContext" . | nindent 6 }}
       terminationGracePeriodSeconds: 30
       volumes:
       - emptyDir: {}

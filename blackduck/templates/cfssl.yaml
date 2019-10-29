@@ -53,6 +53,10 @@ spec:
             memory: {{ .Values.cfssl.limitMemory }}
           requests:
             memory: {{ .Values.cfssl.requestMemory }}
+        {{- with .Values.cfssl.securityContext }}
+        securityContext:
+        {{ toYaml . | indent 2 }}
+        {{- end }}
         terminationMessagePath: /dev/termination-log
         terminationMessagePolicy: File
         volumeMounts:
@@ -73,7 +77,10 @@ spec:
       {{- end }}
       restartPolicy: Always
       schedulerName: default-scheduler
-      {{- include "bd.securityContext" . | nindent 6 }}
+      {{- with .Values.cfssl.podSecurityContext }}
+      securityContext:
+      {{ toYaml . | indent 2 }}
+      {{- end }}
       terminationGracePeriodSeconds: 30
       volumes:
       {{- include "cfsslPersistentStorage" . | nindent 6 }}

@@ -89,6 +89,10 @@ spec:
           requests:
             cpu: {{ .Values.postgres.requestCpu }}
             memory: {{ .Values.postgres.requestMemory }}
+        {{- with .Values.postgres.securityContext }}
+        securityContext:
+        {{ toYaml . | indent 2 }}
+        {{- end }}
         terminationMessagePath: /dev/termination-log
         terminationMessagePolicy: File
         volumeMounts:
@@ -109,7 +113,10 @@ spec:
       {{- end }}
       restartPolicy: Always
       schedulerName: default-scheduler
-      {{- include "bd.securityContext" . | nindent 6 }}
+      {{- with .Values.postgres.podSecurityContext }}
+      securityContext:
+      {{ toYaml . | indent 2 }}
+      {{- end }}
       terminationGracePeriodSeconds: 0
       volumes:
       {{- include "postgresPersistentStorage" . | nindent 6 }}

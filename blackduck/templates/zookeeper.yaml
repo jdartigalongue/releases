@@ -78,7 +78,10 @@ spec:
       {{- end }}
       restartPolicy: Always
       schedulerName: default-scheduler
-      {{- include "bd.securityContext" . | nindent 6 }}
+      {{- with .Values.zookeeper.securityContext }}
+      securityContext:
+      {{ toYaml . | indent 2 }}
+      {{- end }}
       terminationGracePeriodSeconds: 30
       volumes:
       {{- include "zookeeperPersistentStorage" . | nindent 6 }}
