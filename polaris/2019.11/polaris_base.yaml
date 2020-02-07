@@ -2044,9 +2044,9 @@ spec:
         - name: LOGGING_LEVEL
           value: INFO
         - name: SWIP_VAULT_ADDRESS
-          value: https://vault:8200
+          value: https://polaris-db-vault:8200
         - name: VAULT_CACERT
-          value: /var/run/secrets/vault/ca/ca.crt
+          value: /var/run/secrets/vault/ca/tls.crt
         - name: VAULT_CLIENT_KEY
           value: /var/run/secrets/vault/client/tls.key
         - name: VAULT_CLIENT_CERT
@@ -2055,7 +2055,7 @@ spec:
           valueFrom:
             secretKeyRef:
               key: root_token
-              name: vault-tokens
+              name: vault-init-secret
         - name: VAULT_DAEMON_SECRET_PATH
           value: secret/data/auth/public/daemon
         - name: LOGGING_LEVEL
@@ -2127,15 +2127,9 @@ spec:
         - name: DEFAULT_SCAN_LIMIT
           value: "10"
         - name: WIN64_WORKER_LIMIT
-          valueFrom:
-            configMapKeyRef:
-              key: number_of_windows_scans
-              name: polaris-environment-config
+          value: "40"
         - name: LINUX64_WORKER_LIMIT
-          valueFrom:
-            configMapKeyRef:
-              key: number_of_linux_scans
-              name: polaris-environment-config
+          value: "40"
         - name: SWIP_ENVIRONMENT_NAME
           value: ${ENVIRONMENT_NAME}
         - name: ANALYSIS_TYPE
@@ -2182,11 +2176,11 @@ spec:
       volumes:
       - name: vault-client
         secret:
-          secretName: vault-read-only
+          secretName: vault-tls-certificate
       - name: vault-server-ca
         secret:
           defaultMode: 420
-          secretName: vault-tls-certificate-new
+          secretName: vault-tls-certificate
       - name: coverity-license
         secret:
           items:
